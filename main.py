@@ -94,17 +94,15 @@ def get_actor(plataforma: str, anio: int):
     else:
         df_cast = filter_4.assign(actor = df_score['cast'].str.split(',')).explode('actor')
         response_4 = df_cast['actor'].value_counts()
+        df_response_4 = response_4.to_frame().reset_index()
+        df_response_4.columns = ['actor', 'count']
 
         return {
                 'plataforma': plataforma,
                 'anio': anio,
-                'actor': response_4.index[0],
-                'apariciones': response_4.iloc[0]
+                'actor': df_response_4.iloc[0,0],
+                'apariciones': df_response_4.iloc[0,1]
                 }
-
-
-    
-
 
 @app.get('/prod_per_county/{tipo}/{pais}/{anio}')
 def prod_per_county(tipo: str, pais: str, anio: int):
