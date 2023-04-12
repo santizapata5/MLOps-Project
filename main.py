@@ -97,12 +97,10 @@ def get_actor(plataforma: str, anio: int):
         df_response_4 = response_4.to_frame().reset_index()
         df_response_4.columns = ['actor', 'count']
 
-        return {
-                'plataforma': plataforma,
+        return {'plataforma': plataforma,
                 'anio': anio,
                 'actor': df_response_4.iloc[0,0],
-                'apariciones': df_response_4.iloc[0,1]
-                }
+                'apariciones': df_response_4.iloc[0,1]}
 
 @app.get('/prod_per_county/{tipo}/{pais}/{anio}')
 def prod_per_county(tipo: str, pais: str, anio: int):
