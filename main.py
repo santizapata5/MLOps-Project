@@ -100,13 +100,14 @@ def get_actor(plataforma: str, anio: int):
 
         # loop through each list of actor names and count the occurrences of each actor name
         for i in filter_4['cast']:
-            for actor in i:
-                if type(actor) == str:
-                    actor = actor.strip()
-                    if actor in actors_count:
-                        actors_count[actor] += 1
-                    else:
-                        actors_count[actor] = 1
+            if type(i) == list:
+                for actor in i:
+                    if type(actor) == str:
+                        actor = actor.strip()
+                        if actor in actors_count:
+                            actors_count[actor] += 1
+                        else:
+                            actors_count[actor] = 1
 
         # convert the dictionary to a pandas Series and sort by count in descending order
         response_4 = pd.Series(actors_count).sort_values(ascending=False)
