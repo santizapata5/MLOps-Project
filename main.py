@@ -92,7 +92,7 @@ def get_actor(plataforma: str, anio: int):
         return {"error": "No result was found with the specified criteria."}
     else:    
         # Split the cast column by comma and explode the result into a new row for each actor
-        actors = filtered_data['cast'].str.split(',', expand=True).stack().reset_index(drop=True)
+        actors = filter_4['cast'].str.split(',', expand=True).stack().reset_index(drop=True)
 
         # Group the actors by name and count the number of appearances
         actor_counts = actors.groupby(actors).count().reset_index()
