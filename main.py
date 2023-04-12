@@ -83,7 +83,7 @@ def get_max_duration(anio: int, plataforma: str, dtype: str):
     
     # Filter the platform data for the requested platform name, year and duration type of the movie
     filter_1 = df_platforms.loc[(df_platforms['release_year'] == anio) & 
-                                (df_platforms['duration_type'] == .lower()) & 
+                                (df_platforms['duration_type'] == dtype.lower()) & 
                                 (df_platforms['platform'] == plataforma.lower()) & 
                                 (df_platforms['type'] == 'movie')]
     
