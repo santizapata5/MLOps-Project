@@ -91,27 +91,9 @@ def get_actor(plataforma: str, anio: int):
     if filter_4.empty:
         return {"error": "No result was found with the specified criteria."}
     else:
-        
-        # split the strings in the 'cast' column on comma separator
-        filter_4['cast'] = filter_4['cast'].str.split(',')
+        df_cast = filter_4.assign(actor = df_score['cast'].str.split(',')).explode('actor')
+        response_4 = df_cast['actor'].value_counts()
 
-        # create an empty dictionary to store the count of each actor
-        actors_count = {}
-
-        # loop through each list of actor names and count the occurrences of each actor name
-        for i in filter_4['cast']:
-            if type(i) == list:
-                for actor in i:
-                    if type(actor) == str:
-                        actor = actor.strip()
-                        if actor in actors_count:
-                            actors_count[actor] += 1
-                        else:
-                            actors_count[actor] = 1
-
-        # convert the dictionary to a pandas Series and sort by count in descending order
-        response_4 = pd.Series(actors_count).sort_values(ascending=False)
-        
         return {
                 'plataforma': plataforma,
                 'anio': anio,
