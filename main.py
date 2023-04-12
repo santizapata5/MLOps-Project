@@ -4,7 +4,7 @@ from fastapi import FastAPI, Request, Response
 
 pd.set_option('display.float_format', '{:.2f}'.format)
 
-df_score= pd.read_csv(r'data.csv')
+df_score = pd.read_csv(r'data.csv')
 
 app = FastAPI()
 
@@ -94,7 +94,7 @@ def get_actor(plataforma: str, anio: int):
         df_cast = filter_4.assign(new_actors = df_score['cast'].str.split(',')).explode('new_actors')
         response_4 = df_cast['new_actors'].groupby(df_cast['new_actors']).count()
         df_response_4 = response_4.to_frame().reset_index()
-        df_response_4.columns = ['actors', 'count']
+        df_response_4.columns = ['new_actors', 'count']
         df_response_4 = df_response_4.sort_values(by='count', ascending=False)
 
         return {'plataforma': plataforma,
@@ -135,3 +135,5 @@ def get_contents(rating: str):
         return {"error": "No result was found with the specified criteria."}
     else:
         return {'rating': rating, 'contenido': filter_6.shape[0]}
+    
+df_score
