@@ -1,46 +1,29 @@
 import pandas as pd
-import numpy as np
-import seaborn as sns
-import matplotlib.pyplot as plt
 from datetime import datetime
 from fastapi import FastAPI, Request, Response
 
 pd.set_option('display.float_format', '{:.2f}'.format)
-
-df1_ratings = pd.read_csv(r'MLOpsReviews/ratings/1.csv')
-df2_ratings = pd.read_csv(r'MLOpsReviews/ratings/2.csv')
-df3_ratings = pd.read_csv(r'MLOpsReviews/ratings/3.csv')
-df4_ratings = pd.read_csv(r'MLOpsReviews/ratings/4.csv')
-df5_ratings = pd.read_csv(r'MLOpsReviews/ratings/5.csv')
-df6_ratings = pd.read_csv(r'MLOpsReviews/ratings/6.csv')
-df7_ratings = pd.read_csv(r'MLOpsReviews/ratings/7.csv')
-df8_ratings = pd.read_csv(r'MLOpsReviews/ratings/8.csv')
 
 df_amazon = pd.read_csv(r'MLOpsReviews/amazon_prime_titles.csv')
 df_disney = pd.read_csv(r'MLOpsReviews/disney_plus_titles.csv')
 df_hulu = pd.read_csv(r'MLOpsReviews/hulu_titles.csv')
 df_netflix = pd.read_csv(r'MLOpsReviews/netflix_titles.csv')
 
-df_ratings = pd.concat([df1_ratings, df2_ratings, df3_ratings, df4_ratings, 
-                        df5_ratings, df6_ratings, df7_ratings, df8_ratings])
+df_ratings_list = []
+for i in range(1, 9):
+    df_ratings_list.append(pd.read_csv(f'MLOpsReviews/ratings/{i}.csv'))
+df_ratings = pd.concat(df_ratings_list)
 
 df_ratings.isnull().sum()
 
 df_ratings.duplicated().sum()
 df_ratings.drop_duplicates(inplace=True)
 
-df_ratings.dtypes
-
 df_ratings['date'] = pd.to_datetime(df_ratings['timestamp'], unit='s').dt.strftime('%Y-%m-%d')
 
 average_score = df_ratings.groupby('movieId')['rating'].mean()
 
 df_average_score = average_score.reset_index()[['movieId', 'rating']]
-
-print(df_amazon.duplicated().sum())
-print(df_disney.duplicated().sum())
-print(df_hulu.duplicated().sum())
-print(df_netflix.duplicated().sum())
 
 platforms = [df_amazon, df_disney, df_hulu, df_netflix]
 
@@ -54,8 +37,6 @@ for i in platforms:
     i.insert(loc=0, column='id', value= i.name[0]+i['show_id'])
 
 df_platforms = pd.concat([df_amazon, df_disney, df_hulu, df_netflix])
-
-len(df_ratings['movieId'].unique()) == len(df_platforms['id'].unique())
 
 df_platforms['rating'] = df_platforms['rating'].fillna("G")
 
