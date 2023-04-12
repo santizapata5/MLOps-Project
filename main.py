@@ -19,7 +19,7 @@ def get_max_duration(anio: int, plataforma: str, dtype: str):
     assert dtype.lower() in df_score['duration_type'].unique(), f"Invalid duration type: {dtype}"
     
     # Filter the platform data for the requested platform name, year and duration type of the movie
-    filter_1 = df_platforms.loc[(df_score['release_year'] == anio) & 
+    filter_1 = df_score.loc[(df_score['release_year'] == anio) & 
                                 (df_score['duration_type'] == dtype.lower()) & 
                                 (df_score['platform'] == plataforma.lower()) & 
                                 (df_score['type'] == 'movie')]
@@ -80,7 +80,7 @@ def get_count_platform(plataforma: str):
 def get_actor(plataforma: str, anio: int):
 
     # Checks if input values are valid and exist in DataFrame
-    assert plataforma.lower()  in df_score['platform'].unique(), f"Invalid platform: {plataforma}"
+    assert plataforma.lower() in df_score['platform'].unique(), f"Invalid platform: {plataforma}"
     assert anio in df_score['release_year'].unique(), f"Invalid year: {anio}"
     
     # Filter the data for the requested platform and year
@@ -92,7 +92,8 @@ def get_actor(plataforma: str, anio: int):
         return {"error": "No result was found with the specified criteria."}
     else:
         # split the strings in the 'cast' column on comma separator, flatten the list of lists, remove spaces and count frequencies
-        response_4 = filter_4['cast'].str.split(',').explode().str.strip().value_counts()
+        response_4 = filter_4['cast'].apply(lambda x: pd.Series(x).str.strip()).stack().value_counts()
+
         return {
                 'plataforma': plataforma,
                 'anio': anio,
@@ -105,7 +106,7 @@ def prod_per_county(tipo: str, pais: str, anio: int):
 
     # Checks if input values are valid and exist in DataFrame
     assert tipo.lower()  in df_score['type'].unique(), f"Invalid type of content: {tipo}"
-    assert pais.lower()  in df_score['country'].unique(), f"Invalid country: {pais}"
+    assert pais.lower()  in df_score['country'].unique(), f"Invalidntr couy: {pais}"
     assert anio in df_score['release_year'].unique(), f"Invalid year: {anio}"
        
     # Filter the data for the requested type of content, year and country
