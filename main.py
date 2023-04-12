@@ -4,51 +4,7 @@ from fastapi import FastAPI, Request, Response
 
 pd.set_option('display.float_format', '{:.2f}'.format)
 
-df_amazon = pd.read_csv(r'MLOpsReviews/amazon_prime_titles.csv')
-df_disney = pd.read_csv(r'MLOpsReviews/disney_plus_titles.csv')
-df_hulu = pd.read_csv(r'MLOpsReviews/hulu_titles.csv')
-df_netflix = pd.read_csv(r'MLOpsReviews/netflix_titles.csv')
-
-df_ratings_list = []
-for i in range(1, 9):
-    df_ratings_list.append(pd.read_csv(f'MLOpsReviews/ratings/{i}.csv'))
-df_ratings = pd.concat(df_ratings_list)
-
-df_ratings.isnull().sum()
-
-df_ratings.duplicated().sum()
-df_ratings.drop_duplicates(inplace=True)
-
-df_ratings['date'] = pd.to_datetime(df_ratings['timestamp'], unit='s').dt.strftime('%Y-%m-%d')
-
-average_score = df_ratings.groupby('movieId')['rating'].mean()
-
-df_average_score = average_score.reset_index()[['movieId', 'rating']]
-
-platforms = [df_amazon, df_disney, df_hulu, df_netflix]
-
-df_amazon.name = 'amazon'
-df_disney.name = 'disney'
-df_hulu.name = 'hulu'
-df_netflix.name = 'netflix'
-
-for i in platforms:
-    i['platform'] = i.name
-    i.insert(loc=0, column='id', value= i.name[0]+i['show_id'])
-
-df_platforms = pd.concat([df_amazon, df_disney, df_hulu, df_netflix])
-
-df_platforms['rating'] = df_platforms['rating'].fillna("G")
-
-df_platforms['date_added'] = df_platforms['date_added'].str.strip()
-df_platforms['date_added'] = pd.to_datetime(df_platforms['date_added'], format='%B %d, %Y')
-
-df_platforms.iloc[:] = df_platforms.iloc[:].applymap(lambda x: x.lower() if isinstance(x, str) else x)
-
-df_ratings.iloc[:] = df_ratings.iloc[:].applymap(lambda x: x.lower() if isinstance(x, str) else x)
-
-df_platforms[['duration_int', 'duration_type']] = df_platforms['duration'].str.split(expand=True)
-df_platforms['duration_int'] = df_platforms['duration_int'].fillna(0).astype(int)
+df_score= pd.read_csv(r'data.csv')
 
 app = FastAPI()
 
@@ -58,15 +14,15 @@ app = FastAPI()
 def get_max_duration(anio: int, plataforma: str, dtype: str):
     
     # Check if input values are valid and exist in DataFrame
-    assert anio in df_platforms['release_year'].unique(), f"Invalid year: {anio}"
-    assert plataforma.lower() in df_platforms['platform'].unique(), f"Invalid platform: {plataforma}"
-    assert dtype.lower() in df_platforms['duration_type'].unique(), f"Invalid duration type: {dtype}"
+    assert anio in df_score['release_year'].unique(), f"Invalid year: {anio}"
+    assert plataforma.lower() in df_score['platform'].unique(), f"Invalid platform: {plataforma}"
+    assert dtype.lower() in df_score['duration_type'].unique(), f"Invalid duration type: {dtype}"
     
     # Filter the platform data for the requested platform name, year and duration type of the movie
-    filter_1 = df_platforms.loc[(df_platforms['release_year'] == anio) & 
-                                (df_platforms['duration_type'] == dtype.lower()) & 
-                                (df_platforms['platform'] == plataforma.lower()) & 
-                                (df_platforms['type'] == 'movie')]
+    filter_1 = df_platforms.loc[(df_score['release_year'] == anio) & 
+                                (df_score['duration_type'] == dtype.lower()) & 
+                                (df_score['platform'] == plataforma.lower()) & 
+                                (df_score['type'] == 'movie')]
     
     # Check if filtered data is empty
     if filter_1.empty:
@@ -83,12 +39,6 @@ def get_max_duration(anio: int, plataforma: str, dtype: str):
         return {"peliculas": response_1}
     else:
         return {"pelicula": filter_1.loc[filter_1['duration_int'].idxmax(), 'title']}
-
-df_average_score = df_average_score.rename(columns={'movieId':'id'})
-
-df_score = pd.merge(df_platforms, df_average_score, on='id')
-
-df_score = df_score.rename(columns={'rating_x':'rating','rating_y':'score'})
 
 @app.get('/get_score_count/{plataforma}/{scored}/{anio}')
 
@@ -112,7 +62,7 @@ def get_score_count(plataforma: str, scored: float, anio: int):
         return {'plataforma': plataforma,
                 'cantidad': filter_2.shape[0],
                 'anio': anio,
-                'score': scored}
+                'score': scored}    
 
 @app.get('/get_count_platform/{plataforma}')
 def get_count_platform(plataforma: str):
@@ -149,7 +99,7 @@ def get_actor(plataforma: str, anio: int):
                 'actor': response_4.index[0],
                 'apariciones': response_4.iloc[0],
                 }
-
+        
 @app.get('/prod_per_county/{tipo}/{pais}/{anio}')
 def prod_per_county(tipo: str, pais: str, anio: int):
 
@@ -168,7 +118,7 @@ def prod_per_county(tipo: str, pais: str, anio: int):
         return {"error": "No result was found with the specified criteria."}
     else:
          return {'pais': pais, 'anio': anio, 'tipo': tipo, 'peliculas': filter_5.shape[0]}
-
+     
 @app.get('/get_contents/{rating}')
 def get_contents(rating: str):
     
