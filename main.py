@@ -91,9 +91,8 @@ def get_actor(plataforma: str, anio: int):
     if filter_4.empty:
         return {"error": "No result was found with the specified criteria."}
     else:
-        df_cast = filter_4.assign(actors = df_score['cast'].str.split(',')).explode('actor')
-
-        response_4 = df_cast['actors'].groupby(df_cast['actor']).count()
+        df_cast = filter_4.assign(actors = df_score['cast'].str.split(',')).explode('actors')
+        response_4 = df_cast['actors'].groupby(df_cast['actors']).count()
         df_response_4 = response_4.to_frame().reset_index()
         df_response_4.columns = ['actors', 'count']
         df_response_4 = df_response_4.sort_values(by='count', ascending=False)
