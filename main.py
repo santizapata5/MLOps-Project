@@ -92,7 +92,7 @@ def get_actor(plataforma: str, anio: int):
         return {"error": "No result was found with the specified criteria."}
     else:    
         # Split the cast column by comma and explode the result into a new row for each actor
-        actors = filter_4['cast'].astype(str).split(',', expand=True).stack().reset_index(drop=True)
+        actors = filter_4['cast'].astype(str).str.split(',', expand=True).stack().reset_index(drop=True)
         
         # Group the actors by name and count the number of appearances
         actor_counts = actors.groupby(actors).count().reset_index()
@@ -103,7 +103,7 @@ def get_actor(plataforma: str, anio: int):
         return {'plataforma': plataforma,
                 'anio': anio,
                 'actor': actor_counts.iloc[0,0],
-                'apariciones': actor_counts.iloc[0,1]}
+                'apariciones': int(actor_counts.iloc[0,1])}
    
 @app.get('/prod_per_county/{tipo}/{pais}/{anio}')
 def prod_per_county(tipo: str, pais: str, anio: int):
@@ -138,5 +138,3 @@ def get_contents(rating: str):
         return {"error": "No result was found with the specified criteria."}
     else:
         return {'rating': rating, 'contenido': filter_6.shape[0]}
-    
-df_score
