@@ -91,15 +91,32 @@ def get_actor(plataforma: str, anio: int):
     if filter_4.empty:
         return {"error": "No result was found with the specified criteria."}
     else:
-        # split the strings in the 'cast' column on comma separator, flatten the list of lists, remove spaces and count frequencies
-        response_4 = filter_4['cast'].str.split(',').explode().str.strip().value_counts()
+        
+        # split the strings in the 'cast' column on comma separator
+        filter_4['cast'] = filter_4['cast'].str.split(',')
+
+        # create an empty dictionary to store the count of each actor
+        actors_count = {}
+
+        # loop through each list of actor names and count the occurrences of each actor name
+        for actors in filter_4['cast']:
+            for actor in actors:
+                actor = actor.strip()
+                if actor in actors_count:
+                    actors_count[actor] += 1
+                else:
+                    actors_count[actor] = 1
+
+        # convert the dictionary to a pandas Series and sort by count in descending order
+        response_4 = pd.Series(actors_count).sort_values(ascending=False)
+        
         return {
                 'plataforma': plataforma,
                 'anio': anio,
                 'actor': response_4.index[0],
                 'apariciones': response_4.iloc[0]
                 }
-        
+
 @app.get('/prod_per_county/{tipo}/{pais}/{anio}')
 def prod_per_county(tipo: str, pais: str, anio: int):
 
