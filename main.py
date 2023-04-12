@@ -83,25 +83,28 @@ def get_actor(plataforma: str, anio: int):
     assert plataforma.lower() in df_score['platform'].unique(), f"Invalid platform: {plataforma}"
     assert anio in df_score['release_year'].unique(), f"Invalid year: {anio}"
 
-    # Filter the data for the requested platform and year
-    filter_4 = df_score.loc[(df_score['release_year'] == anio) & 
-                            (df_score['platform'] == plataforma.lower())]
+    # Filter the data based on the platform and year
+    filter_4 = df_score[(df_score['platform'] == plataforma.lower()) & 
+                        (df_score['release_year'] == anio)]
     
     # Checks if filtered data is empty. If not, it returns the desired information.
     if filter_4.empty:
         return {"error": "No result was found with the specified criteria."}
-    else:
-        df_cast = filter_4.assign(new_actors = df_score['cast'].str.split(',')).explode('new_actors')
-        response_4 = df_cast['new_actors'].groupby(df_cast['new_actors']).count()
-        df_response_4 = response_4.to_frame().reset_index()
-        df_response_4.columns = ['new_actors', 'count']
-        df_response_4 = df_response_4.sort_values(by='count', ascending=False)
+    else:    
+        # Split the cast column by comma and explode the result into a new row for each actor
+        actors = filtered_data['cast'].str.split(',', expand=True).stack().reset_index(drop=True)
+
+        # Group the actors by name and count the number of appearances
+        actor_counts = actors.groupby(actors).count().reset_index()
+      
+        # Sort the actors based on the appearance count in descending order
+        actor_counts = actor_counts.sort_values(by=0, ascending=False)
 
         return {'plataforma': plataforma,
                 'anio': anio,
-                'actor': df_response_4.iloc[0,0],
-                'apariciones': df_response_4.iloc[0,1]}
-
+                'actor': actor_counts.iloc[0,0],
+                'apariciones': actor_counts.iloc[0,1]}
+   
 @app.get('/prod_per_county/{tipo}/{pais}/{anio}')
 def prod_per_county(tipo: str, pais: str, anio: int):
 
