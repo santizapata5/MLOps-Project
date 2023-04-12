@@ -81,7 +81,8 @@ def get_actor(plataforma: str, anio: int):
 
     # Checks if input values are valid and exist in DataFrame
     assert plataforma.lower() in df_score['platform'].unique(), f"Invalid platform: {plataforma}"
-    assert anio in df_score['release_year'].unique(), f"Invalid year: {anio}"
+    assert int(anio) in df_score['release_year'].unique(), f"Invalid year: {anio}"
+    anio = int(anio)
     
     # Filter the data for the requested platform and year
     filter_4 = df_score.loc[(df_score['release_year'] == anio) & 
@@ -100,6 +101,10 @@ def get_actor(plataforma: str, anio: int):
                 'actor': response_4.index[0],
                 'apariciones': response_4.iloc[0]
                 }
+
+
+    
+
 
 @app.get('/prod_per_county/{tipo}/{pais}/{anio}')
 def prod_per_county(tipo: str, pais: str, anio: int):
