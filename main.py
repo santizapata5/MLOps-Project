@@ -99,9 +99,9 @@ def get_actor(plataforma: str, anio: int):
         actors_count = {}
 
         # loop through each list of actor names and count the occurrences of each actor name
-        for actors in filter_4['cast']:
-            if type(actors) == list:
-                for actor in actors:
+        for i in filter_4['cast']:
+            for actor in i:
+                if type(actor) == str:
                     actor = actor.strip()
                     if actor in actors_count:
                         actors_count[actor] += 1
@@ -135,7 +135,7 @@ def prod_per_county(tipo: str, pais: str, anio: int):
     if filter_5.empty:
         return {"error": "No result was found with the specified criteria."}
     else:
-         return {'pais': pais, 'anio': anio, 'tipo': tipo, 'peliculas': filter_5.shape[0]}
+         return {'pais': pais, 'anio': anio, 'peliculas': filter_5.shape[0]}
      
 @app.get('/get_contents/{rating}')
 def get_contents(rating: str):
