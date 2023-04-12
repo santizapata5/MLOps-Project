@@ -92,13 +92,12 @@ def get_actor(plataforma: str, anio: int):
         return {"error": "No result was found with the specified criteria."}
     else:
         # split the strings in the 'cast' column on comma separator, flatten the list of lists, remove spaces and count frequencies
-        response_4 = filter_4['cast'].apply(lambda x: pd.Series(x).str.strip()).stack().value_counts()
-
+        response_4 = filter_4['cast'].str.split(',').explode().str.strip().value_counts()
         return {
                 'plataforma': plataforma,
                 'anio': anio,
                 'actor': response_4.index[0],
-                'apariciones': response_4.iloc[0],
+                'apariciones': response_4.iloc[0]
                 }
         
 @app.get('/prod_per_county/{tipo}/{pais}/{anio}')
