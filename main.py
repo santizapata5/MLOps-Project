@@ -1,16 +1,19 @@
+# Import libraries
 import pandas as pd
-from datetime import datetime
 from fastapi import FastAPI, Request, Response
 
+# Configure the float format display for 2 decimals in Pandas.
 pd.set_option('display.float_format', '{:.2f}'.format)
 
+# Extract data from csv file
 df_score = pd.read_csv(r'data.csv')
 
+# Creates an instance of the fastAPI class.
 app = FastAPI()
 
-@app.get('/get_max_duration/{anio}/{plataforma}/{dtype}')
+# ---------------------------------------- Query 1 ---------------------------------------- 
 
-# Define the function to handle the endpoint
+@app.get('/get_max_duration/{anio}/{plataforma}/{dtype}')
 def get_max_duration(anio: int, plataforma: str, dtype: str):
     
     # Check if input values are valid and exist in DataFrame
@@ -40,8 +43,9 @@ def get_max_duration(anio: int, plataforma: str, dtype: str):
     else:
         return {"pelicula": filter_1.loc[filter_1['duration_int'].idxmax(), 'title']}
 
-@app.get('/get_score_count/{plataforma}/{scored}/{anio}')
+# ---------------------------------------- Query 2 ---------------------------------------- 
 
+@app.get('/get_score_count/{plataforma}/{scored}/{anio}')
 def get_score_count(plataforma: str, scored: float, anio: int):
     
     # Check if input values are valid and exist in DataFrame
@@ -64,6 +68,8 @@ def get_score_count(plataforma: str, scored: float, anio: int):
                 'anio': anio,
                 'score': scored}    
 
+# ---------------------------------------- Query 3 ---------------------------------------- 
+
 @app.get('/get_count_platform/{plataforma}')
 def get_count_platform(plataforma: str):
 
@@ -76,35 +82,42 @@ def get_count_platform(plataforma: str):
 
     return {'plataforma': plataforma, 'peliculas': filter_3.shape[0]}
 
+# ---------------------------------------- Query 4 ---------------------------------------- 
+
 @app.get('/get_actor/{plataforma}/{anio}')
 def get_actor(plataforma: str, anio: int):
 
-    # Checks if input values are valid and exist in DataFrame
+    # Checks if input values exist in the data. Raises an error if either platform or year is not valid.
     assert plataforma.lower() in df_score['platform'].unique(), f"Invalid platform: {plataforma}"
     assert anio in df_score['release_year'].unique(), f"Invalid year: {anio}"
 
-    # Filter the data based on the platform and year
+    # Filter the data based on the platform and year.
     filter_4 = df_score[(df_score['platform'] == plataforma.lower()) & 
                         (df_score['release_year'] == anio)]
-    
-    # Checks if filtered data is empty. If not, it returns the desired information.
-    if filter_4.empty:
-        return {"error": "No result was found with the specified criteria."}
-    else:    
-        # Split the cast column by comma and explode the result into a new row for each actor
-        actors = filter_4['cast'].astype(str).str.split(',', expand=True).stack().reset_index(drop=True)
         
-        # Group the actors by name and count the number of appearances
-        actor_counts = actors.groupby(actors).count().reset_index()
-      
-        # Sort the actors based on the appearance count in descending order
-        actor_counts = actor_counts.sort_values(by=0, ascending=False)
+    # Checks if filtered data is empty. If empty, returns an error. Otherwise, continues with the execution.
+    if filter_4.empty:
+        return {"error": "No results were found in the dataset for the platform and year combination."}
+    else:    
+        # Extracts the 'cast' column from the filtered dataframe, converts the values to strings, splits and expands the strings 
+        # in new columns. Then, stacks these columns a in a single column, resets the index and drops the missing values.
+        actors = filter_4['cast'].astype(str).str.split(',', expand=True).stack().reset_index(drop=True).dropna()
+        
+        # Create a Series of actors with their appearance counts.
+        actors_series = actors.value_counts()  
+        
+        # Finds the actor with the highest number of appearances and their corresponding number of appearances.
+        top_actor = actors_series.idxmax()
+        appearances = actors_series[top_actor]
 
+        # Returns the query result in a dictionary format.
         return {'plataforma': plataforma,
                 'anio': anio,
-                'actor': actor_counts.iloc[0,0],
-                'apariciones': int(actor_counts.iloc[0,1])}
-   
+                'actor': top_actor,
+                'apariciones': int(appearances)}
+
+# ---------------------------------------- Query 5 ---------------------------------------- 
+
 @app.get('/prod_per_county/{tipo}/{pais}/{anio}')
 def prod_per_county(tipo: str, pais: str, anio: int):
 
@@ -123,6 +136,8 @@ def prod_per_county(tipo: str, pais: str, anio: int):
         return {"error": "No result was found with the specified criteria."}
     else:
          return {'pais': pais, 'anio': anio, 'peliculas': filter_5.shape[0]}
+
+# ---------------------------------------- Query 6 ----------------------------------------
      
 @app.get('/get_contents/{rating}')
 def get_contents(rating: str):
@@ -138,3 +153,17 @@ def get_contents(rating: str):
         return {"error": "No result was found with the specified criteria."}
     else:
         return {'rating': rating, 'contenido': filter_6.shape[0]}
+    
+        # ANTES del error
+        return {'plataforma': plataforma,
+                'anio': anio,
+                'actor': actor_counts.iloc[0,0],
+                'apariciones': actor_counts.iloc[0,1]}
+        
+        # DESPUÉS de corregir
+        return {'plataforma': plataforma,
+                'anio': anio,
+                'actor': actor_counts.iloc[0,0],
+                'apariciones': int(actor_counts.iloc[0,1])}
+
+# -------------------------------------- End of queries -------------------------------------- 
