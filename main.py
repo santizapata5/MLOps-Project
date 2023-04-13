@@ -34,14 +34,7 @@ def get_max_duration(anio: int, plataforma: str, dtype: str):
     # Sort the filtereded data by duration
     filtered = filtered.sort_values('duration_int', ascending=False)
     
-    # Find the movie(s) with the maximum duration
-    max_duration = filtered['duration_int'].max()
-    
-    if len(filtered.loc[filtered['duration_int'] == max_duration]) > 1:
-        response = (filtered.loc[filtered['duration_int'] == max_duration]).tolist()
-        return {"pelicula": str(response)}
-    else:
-        return {"pelicula": str(filtered.loc[filtered['duration_int'].idxmax(), 'title'])}
+    return {"pelicula": str(filtered.loc[filtered['duration_int'].idxmax(), 'title'])}
 
 # ---------------------------------------- Query 2 ---------------------------------------- 
 
@@ -104,7 +97,12 @@ def get_actor(plataforma: str, anio: int):
     else:    
         # Extracts the 'cast' column from the filtereded dataframe, converts the values to strings, splits and expands the strings 
         # in new columns. Then, stacks these columns a in a single column, resets the index and drops the missing values.
-        actors = filtered['cast'].astype(str).str.split(',', expand=True).stack().reset_index(drop=True).dropna()
+        actors = filtered['cast'].astype(str) \
+            .str.split(',', expand=True) \
+            .stack() \
+            .reset_index(drop=True) \
+            .dropna() \
+            .str.strip()
         
         # Create a Series of actors with their appearance counts.
         actors_series = actors.value_counts()  
