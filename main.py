@@ -55,9 +55,9 @@ def get_score_count(plataforma: str, scored: float, anio: int):
     
     # filtered the platform data for the requested platform, year and score of the movie
     filtered = df.loc[(df['release_year'] == anio) & 
-                            (df['platform'] == plataforma.lower()) & 
-                            (df['score'] > scored) &
-                            (df['type'] == 'movie')]
+                      (df['platform'] == plataforma.lower()) & 
+                      (df['score'] > scored) &
+                      (df['type'] == 'movie')]
     
     # Checks if filtereded data is empty. If not it returns. the desired information.
     if filtered.empty:
