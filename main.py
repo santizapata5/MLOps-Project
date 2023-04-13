@@ -92,10 +92,6 @@ def get_actor(plataforma: str, anio: int):
     assert anio in df_score['release_year'].unique(), f"Invalid year: {anio}"
 
     # Filter the data based on the platform and year.
-    filter_4 = df_score[df_score['platform'] == plataforma.lower() & 
-                        df_score['release_year'] == anio &
-                        df_score['cast'].notna()]
-    
     filter_4 = df_score[(df_score['platform'] == plataforma.lower()) & 
                         (df_score['release_year'] == anio) &
                          df_score['cast'].notna()]
