@@ -1,12 +1,15 @@
 # Import libraries
 import pandas as pd
 from fastapi import FastAPI, Request, Response
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
 
 # Configure the float format display for 2 decimals in Pandas.
 pd.set_option('display.float_format', '{:.2f}'.format)
 
 # Extract data from csv file
-df = pd.read_csv(r'data.csv')
+df = pd.read_csv(r'data_api.csv')
+df_ml = pd.read_csv(r'data_ML.csv')
 
 # Creates an instance of the fastAPI class.
 app = FastAPI()
@@ -138,7 +141,7 @@ def prod_per_county(tipo: str, pais: str, anio: int):
     if filtered.empty:
         return {"error": "No result was found with the specified criteria."}
     else:
-         return {'pais': pais, 'anio': anio, 'peliculas': int(filtered.shape[0])}
+         return {'pais': pais, 'anio': anio, 'contenido': int(filtered.shape[0])}
 
 # ---------------------------------------- Query 6 ----------------------------------------
      
@@ -160,10 +163,29 @@ def get_contents(rating: str):
 # -------------------------------------- End of queries -------------------------------------- 
 
 
-
 # ----------------------------------------- ML Query -----------------------------------------
 
-""" @app.get('/get_recomendation/{title}')
+@app.get('/get_recomendation/{title}')
 def get_recomendation(title,):
     
-    return {'recomendacion':respuesta} """
+    # Extract the relevant features
+    features = ['title', 'genre', 'director']
+    df_features = df_ml[features].fillna('')
+
+    # Convert the features into a list of strings
+    feature_strings = df_features.apply(lambda x: ' '.join(x), axis=1)
+
+    # Vectorize the feature strings using binary encoding
+    vectorizer = CountVectorizer(binary=True)
+    feature_vectors = vectorizer.fit_transform(feature_strings)
+
+    # Compute the pairwise cosine similarity between all movies
+    similarity_matrix = cosine_similarity(feature_vectors)
+
+    # Get the top 5 similar movies for a given movie
+    movie_idx = df_ml[df_ml['title'] == title].index[0]
+    similarities = list(enumerate(similarity_matrix[movie_idx]))
+    similarities = sorted(similarities, key=lambda x: x[1], reverse=True)
+    top_similar_movies = [df_ml.iloc[idx]['title'] for idx, _ in similarities[1:6]]
+
+    return {'recomendacion':f"Top similar movies for {title}: {top_similar_movies}"}
