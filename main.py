@@ -166,7 +166,7 @@ def get_contents(rating: str):
 # ----------------------------------------- ML Query -----------------------------------------
 
 @app.get('/get_recomendation/{title}')
-def get_recomendation(title,):
+def get_recomendation(title):
     
     # Extract the relevant features
     features = ['title', 'genre', 'director']
@@ -186,6 +186,5 @@ def get_recomendation(title,):
     movie_idx = df_ml[df_ml['title'] == title].index[0]
     similarities = list(enumerate(similarity_matrix[movie_idx]))
     similarities = sorted(similarities, key=lambda x: x[1], reverse=True)
-    top_similar_movies = [df_ml.iloc[idx]['title'] for idx, _ in similarities[1:6]]
 
-    return {'recomendacion':f"Top similar movies for {title}: {top_similar_movies}"}
+    return {'recomendacion':str([df_ml.iloc[idx]['title'] for idx, _ in similarities[1:6]])}
