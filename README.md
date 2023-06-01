@@ -8,6 +8,6 @@ The clean data consumed by fastAPI can be found in the files 'data_api.csv' and 
 
 All the 7 endpoints can be found in the 'main.py' file. Unfortunately Render does not provide enough memory for the last endpoint to run properly, but it does work locally.
 
-Link to the API deployed on Render: https://mlopsreviews.onrender.com/docs
+Link to the API deployed on [Render](https://mlopsreviews.onrender.com/docs)
 
-Link to Google Drive with the raw datasets: https://drive.google.com/drive/folders/1iTgUo9KpCBnJq6XMWg-WxqGahTY6vWX-?usp=share_link
+[Raw Datasets](https://drive.google.com/drive/folders/1iTgUo9KpCBnJq6XMWg-WxqGahTY6vWX-?usp=share_link)
